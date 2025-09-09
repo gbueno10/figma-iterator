@@ -1,0 +1,22 @@
+{
+  "name": "frame-iterator",
+  "version": "1.0.0",
+  "description": "Figma plugin to shuffle elements within a frame",
+  "main": "dist/code.js",
+  "scripts": {
+    "build": "webpack --mode=production",
+    "build:watch": "webpack --mode=development --watch",
+    "dev": "webpack --mode=development"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.75.0",
+    "html-webpack-inline-source-plugin": "0.0.10",
+    "html-webpack-plugin": "^5.5.3",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.2.2",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  },
+  "author": "",
+  "license": "MIT"
+}

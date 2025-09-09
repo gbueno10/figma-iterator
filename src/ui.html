@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Frame Iterator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 12px;
+      background: #ffffff;
+      color: #333;
+      padding: 16px;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+    }
+    
+    .header {
+      text-align: center;
+    }
+    
+    .title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+    
+    .subtitle {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.4;
+    }
+    
+    .info-card {
+      background: #f8f9fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 12px;
+      display: none;
+    }
+    
+    .info-card.visible {
+      display: block;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    
+    .info-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .info-label {
+      font-size: 11px;
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .info-value {
+      font-size: 11px;
+      color: #1a1a1a;
+      font-weight: 600;
+    }
+    
+    .instructions {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 11px;
+      color: #856404;
+      line-height: 1.4;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+    }
+    
+    .button {
+      flex: 1;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    
+    .button-primary {
+      background: #18a0fb;
+      color: white;
+    }
+    
+    .button-primary:hover {
+      background: #1592e6;
+    }
+    
+    .button-primary:active {
+      background: #1484d1;
+    }
+    
+    .button-secondary {
+      background: #f1f3f4;
+      color: #333;
+      border: 1px solid #ddd;
+    }
+    
+    .button-secondary:hover {
+      background: #e8eaed;
+    }
+    
+    .emoji {
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">🔀 Frame Iterator</div>
+      <div class="subtitle">Embaralhe elementos dentro de um frame</div>
+    </div>
+    
+    <div id="info-card" class="info-card">
+      <div class="info-row">
+        <span class="info-label">Frame selecionado:</span>
+        <span id="frame-name" class="info-value">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Elementos encontrados:</span>
+        <span id="children-count" class="info-value">0</span>
+      </div>
+    </div>
+    
+    <div id="instructions" class="instructions">
+      <strong>📋 Como usar:</strong><br>
+      1. Selecione um frame no Figma<br>
+      2. Clique em "Embaralhar Elementos"<br>
+      3. Um novo frame será criado com os elementos embaralhados!
+    </div>
+    
+    <div class="button-group">
+      <button id="cancel-btn" class="button button-secondary">
+        <span class="emoji">❌</span>
+        Cancelar
+      </button>
+      <button id="shuffle-btn" class="button button-primary">
+        <span class="emoji">🔀</span>
+        Embaralhar Elementos
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Elementos DOM
+    const infoCard = document.getElementById('info-card');
+    const instructions = document.getElementById('instructions');
+    const frameNameEl = document.getElementById('frame-name');
+    const childrenCountEl = document.getElementById('children-count');
+    const shuffleBtn = document.getElementById('shuffle-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    
+    // Event listeners
+    shuffleBtn.addEventListener('click', () => {
+      parent.postMessage({ pluginMessage: { type: 'shuffle-elements' } }, '*');
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+      parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+    });
+    
+    // Escuta mensagens do plugin
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      
+      if (msg.type === 'frame-selected') {
+        // Mostra informações do frame selecionado
+        frameNameEl.textContent = msg.frameName;
+        childrenCountEl.textContent = msg.childrenCount;
+        
+        if (msg.childrenCount > 0) {
+          infoCard.classList.add('visible');
+          instructions.style.display = 'none';
+          
+          // Habilita/desabilita botão baseado na quantidade de elementos
+          if (msg.childrenCount < 2) {
+            shuffleBtn.disabled = true;
+            shuffleBtn.textContent = '⚠️ Precisa de 2+ elementos';
+            shuffleBtn.style.background = '#ccc';
+          } else {
+            shuffleBtn.disabled = false;
+            shuffleBtn.innerHTML = '<span class="emoji">🔀</span> Embaralhar Elementos';
+            shuffleBtn.style.background = '#18a0fb';
+          }
+        }
+      }
+    };
+  </script>
+</body>
+</html>
