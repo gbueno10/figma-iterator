@@ -18,6 +18,12 @@ Um plugin avançado para Figma que permite permutar elementos dentro de frames, 
 - Gera até 5 variações onde o elemento escolhido troca com cada um dos outros
 - Ideal para testar diferentes hierarquias visuais
 
+### 👑 **Teste de Destaque**
+- Cria variações onde **cada elemento** se torna o principal
+- Promove automaticamente cada elemento para a posição de destaque
+- Perfeito para testar diferentes hierarquias e focos visuais
+- Gera uma variação para cada elemento desbloqueado
+
 ### 🎯 **Detecção Inteligente**
 - **Modo Auto**: Detecta automaticamente o elemento principal (maior ou mais central)
 - **Modo Manual**: Você escolhe qual elemento será o foco das trocas
@@ -43,12 +49,14 @@ Um plugin avançado para Figma que permite permutar elementos dentro de frames, 
 3. **Escolha o modo**:
    - **🔀 Permuta Simples**: Embaralha todos os elementos
    - **🔄 Múltiplas Trocas**: Selecione um elemento para gerar variações
+   - **👑 Teste de Destaque**: Cada elemento se torna o principal
 4. **Aprove as variações** criadas automaticamente!
 
 ## 📋 Requisitos
 
 - **Figma Desktop** (versão mais recente recomendada)
-- **Frame selecionado** com pelo menos 2 elementos
+- **Frame selecionado** com pelo menos 2 elementos (para permuta simples)
+- **Frame selecionado** com pelo menos 1 elemento desbloqueado (para teste de destaque)
 - **Elementos desbloqueados** para permutação
 
 ## 🛠️ Tecnologias
@@ -82,6 +90,11 @@ figma-iterator/
 - Crie variações de cards de produto
 - Teste diferentes layouts de landing pages
 - Gere versões alternativas de interfaces
+
+### 👑 **Teste de Hierarquia Visual**
+- Use o **Teste de Destaque** para ver como cada elemento fica como protagonista
+- Compare rapidamente diferentes ênfases visuais
+- Otimize a hierarquia de informação em seus designs
 
 ### 📱 **Design de Apps**
 - Teste diferentes hierarquias de informação

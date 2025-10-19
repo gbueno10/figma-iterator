@@ -336,6 +336,143 @@ async function generateMultipleVariations(selectedElementId?: string | null) {
   figma.notify(`✅ ${maxVariations} variações criadas! "${elementToSwap.name}" trocou de posição com diferentes elementos.`);
 }
 
+// Função para incrementar a versão no nome do frame (v1 -> v2, v2 -> v3, etc.)
+function incrementFrameVersion(frameName: string, iteration: number): string {
+    // Regex para encontrar padrões como v1, v2, v3a, v10b, etc.
+    const versionRegex = /(_v)(\d+)([a-z]?)/i;
+    const match = frameName.match(versionRegex);
+    
+    if (match) {
+        // Se encontrou uma versão, incrementa o número
+        const currentVersion = parseInt(match[2]);
+        const newVersion = currentVersion + iteration;
+        const letter = match[3]; // Preserva letra se existir (a, b, c...)
+        
+        return frameName.replace(versionRegex, `${match[1]}${newVersion}${letter}`);
+    } else {
+        // Se não encontrou versão, adiciona no final
+        return `${frameName}_v${iteration + 1}`;
+    }
+}
+
+// Nova função para criar UMA variação de destaque
+async function createSpotlightVariation(
+    originalFrame: FrameNode,
+    mainElementTransform: { x: number, y: number, width: number, height: number, name: string },
+    promotedElementIndex: number, // Índice do elemento que será promovido
+    promotedElementName: string, // Nome do elemento para referência
+    iteration: number // Para posicionamento do novo frame
+): Promise<FrameNode> {
+    const newFrame = originalFrame.clone();
+
+    // Posiciona os novos frames em uma grade para melhor visualização
+    const framesPerRow = 5;
+    const col = iteration % framesPerRow;
+    const row = Math.floor(iteration / framesPerRow);
+    newFrame.x = originalFrame.x + (originalFrame.width + 100) * col;
+    newFrame.y = originalFrame.y + (originalFrame.height + 100) * (row + 1);
+
+    // Incrementa a versão no nome do frame
+    newFrame.name = incrementFrameVersion(originalFrame.name, iteration + 1);
+
+    // Pega os elementos desbloqueados do NOVO frame
+    const newUnlockedChildren = newFrame.children.filter(c => !c.locked);
+    
+    if (promotedElementIndex >= newUnlockedChildren.length) {
+        return newFrame;
+    }
+
+    const newPromotedElement = newUnlockedChildren[promotedElementIndex];
+
+    // Encontra o elemento que está atualmente na posição principal
+    const currentElementInMainSpot = newUnlockedChildren.find(c =>
+        Math.abs(c.x - mainElementTransform.x) < 1 &&
+        Math.abs(c.y - mainElementTransform.y) < 1 &&
+        Math.abs(c.width - mainElementTransform.width) < 1 &&
+        Math.abs(c.height - mainElementTransform.height) < 1
+    );
+
+    if (currentElementInMainSpot && currentElementInMainSpot !== newPromotedElement) {
+        // Guarda as posições originais
+        const originalPromotedTransform = {
+            x: newPromotedElement.x, 
+            y: newPromotedElement.y,
+            width: newPromotedElement.width, 
+            height: newPromotedElement.height
+        };
+
+        // 1. Elemento promovido vai para a posição principal
+        newPromotedElement.x = mainElementTransform.x;
+        newPromotedElement.y = mainElementTransform.y;
+        newPromotedElement.resize(mainElementTransform.width, mainElementTransform.height);
+        await adjustTextStyles(newPromotedElement, originalPromotedTransform, mainElementTransform);
+
+        // 2. Elemento que estava no main vai para a posição do promovido
+        currentElementInMainSpot.x = originalPromotedTransform.x;
+        currentElementInMainSpot.y = originalPromotedTransform.y;
+        currentElementInMainSpot.resize(originalPromotedTransform.width, originalPromotedTransform.height);
+        await adjustTextStyles(currentElementInMainSpot, mainElementTransform, originalPromotedTransform);
+    }
+    // Se o elemento já é o principal, mantém o nome com versão incrementada
+    
+    return newFrame;
+}
+
+// Função principal para gerar todas as variações de destaque
+async function generateAllSpotlightVariations() {
+    const selection = figma.currentPage.selection;
+
+    if (selection.length === 0 || selection[0].type !== "FRAME") {
+        figma.notify("❌ Selecione um frame para gerar as variações de destaque!", { error: true });
+        return;
+    }
+
+    const originalFrame = selection[0];
+    // Pegamos TODOS os filhos para garantir que todos tenham uma chance de serem o principal
+    const allChildren = [...originalFrame.children];
+    const unlockedChildren = allChildren.filter(child => !child.locked);
+
+    if (unlockedChildren.length < 1) { // Precisa de pelo menos 1 elemento para ser principal
+        figma.notify("❌ O frame não possui elementos desbloqueados para testar.", { error: true });
+        return;
+    }
+
+    // 1. Detecta qual é o elemento principal atual, e guarda sua posição/tamanho de "trono"
+    const currentMainElement = detectMainGroup(unlockedChildren);
+    if (!currentMainElement) {
+        figma.notify("❌ Não foi possível detectar um elemento principal para usar como base.", { error: true });
+        return;
+    }
+
+    const mainElementTransform = {
+        x: currentMainElement.x, y: currentMainElement.y,
+        width: currentMainElement.width, height: currentMainElement.height,
+        name: currentMainElement.name // Para referência
+    };
+
+    figma.notify(`👑 Gerando variações, promovendo cada elemento à posição de destaque de "${currentMainElement.name}"...`, { timeout: 3000 });
+
+    const newFrames: SceneNode[] = [];
+
+    // Itera sobre CADA elemento desbloqueado para que ele se torne o "principal"
+    for (let i = 0; i < unlockedChildren.length; i++) {
+        const elementToPromote = unlockedChildren[i];
+
+        const newFrame = await createSpotlightVariation(
+            originalFrame,
+            mainElementTransform,
+            i, // Índice do elemento
+            elementToPromote.name, // Nome do elemento
+            i // Índice para posicionamento
+        );
+        newFrames.push(newFrame);
+    }
+
+    figma.currentPage.selection = newFrames;
+    figma.viewport.scrollAndZoomIntoView(newFrames);
+    figma.notify(`✅ ${newFrames.length} variações de destaque criadas! Cada elemento foi promovido à posição principal.`);
+}
+
 // Função principal para permutar posições dos elementos (versão original)
 async function permuteElementPositions() {
   const selection = figma.currentPage.selection;
@@ -437,6 +574,8 @@ figma.ui.onmessage = async (msg) => {
     await permuteElementPositions();
   } else if (msg.type === 'generate-variations') {
     await generateMultipleVariations(msg.selectedElementId);
+  } else if (msg.type === 'generate-spotlight-variations') {
+    await generateAllSpotlightVariations();
   } else if (msg.type === 'cancel') {
     figma.closePlugin();
   }

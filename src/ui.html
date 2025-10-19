@@ -170,6 +170,10 @@
         <span class="emoji">🔀</span>
         Embaralhar Elementos
       </button>
+      <button id="spotlight-btn" class="button button-primary">
+        <span class="emoji">👑</span>
+        Teste de Destaque
+      </button>
     </div>
   </div>
 
@@ -180,11 +184,16 @@
     const frameNameEl = document.getElementById('frame-name');
     const childrenCountEl = document.getElementById('children-count');
     const shuffleBtn = document.getElementById('shuffle-btn');
+    const spotlightBtn = document.getElementById('spotlight-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     
     // Event listeners
     shuffleBtn.addEventListener('click', () => {
       parent.postMessage({ pluginMessage: { type: 'shuffle-elements' } }, '*');
+    });
+    
+    spotlightBtn.addEventListener('click', () => {
+      parent.postMessage({ pluginMessage: { type: 'generate-spotlight-variations' } }, '*');
     });
     
     cancelBtn.addEventListener('click', () => {
@@ -213,6 +222,17 @@
             shuffleBtn.disabled = false;
             shuffleBtn.innerHTML = '<span class="emoji">🔀</span> Embaralhar Elementos';
             shuffleBtn.style.background = '#18a0fb';
+          }
+          
+          // Botão de destaque precisa de pelo menos 1 elemento
+          if (msg.unlockedCount < 1) {
+            spotlightBtn.disabled = true;
+            spotlightBtn.textContent = '⚠️ Precisa de 1+ elemento';
+            spotlightBtn.style.background = '#ccc';
+          } else {
+            spotlightBtn.disabled = false;
+            spotlightBtn.innerHTML = '<span class="emoji">👑</span> Teste de Destaque';
+            spotlightBtn.style.background = '#18a0fb';
           }
         }
       }
