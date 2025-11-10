@@ -365,12 +365,9 @@ async function createSpotlightVariation(
 ): Promise<FrameNode> {
     const newFrame = originalFrame.clone();
 
-    // Posiciona os novos frames em uma grade para melhor visualização
-    const framesPerRow = 5;
-    const col = iteration % framesPerRow;
-    const row = Math.floor(iteration / framesPerRow);
-    newFrame.x = originalFrame.x + (originalFrame.width + 100) * col;
-    newFrame.y = originalFrame.y + (originalFrame.height + 100) * (row + 1);
+    // Posiciona os novos frames em uma linha horizontal ao lado do original
+    newFrame.x = originalFrame.x + (originalFrame.width + 100) * (iteration + 1);
+    newFrame.y = originalFrame.y;
 
     // Incrementa a versão no nome do frame
     newFrame.name = incrementFrameVersion(originalFrame.name, iteration + 1);
