@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack --mode=production",
     "build:watch": "webpack --mode=development --watch",
-    "dev": "webpack --mode=development"
+    "dev": "webpack --mode=development",
+    "release": "bash scripts/prepare-release.sh"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.75.0",

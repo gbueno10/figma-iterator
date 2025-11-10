@@ -7,6 +7,7 @@ yarn-error.log*
 # Build outputs
 dist/
 build/
+release/
 
 # IDE files
 .vscode/
@@ -43,6 +44,7 @@ coverage/
 
 # Figma plugin specific
 figma-plugin.zip
+frame-iterator-plugin.zip
 
 # Temporary files
 tmp/
